@@ -1,0 +1,26 @@
+\documentclass[twocolumn]{article}
+\usepackage{multirow}
+\usepackage{booktabs}
+
+\begin{document}
+
+\begin{table*}[ht]
+\centering
+\caption{Hosts and BAF Analysis}
+\begin{tabular}{lccccccc}
+\toprule
+\multirow{2}{*}{Protocol} & \multirow{2}{*}{\# of hosts} & \multirow{2}{*}{\# of open hosts} & \multicolumn{3}{c}{BAF} & \multirow{2}{*}{Strategy} \\
+\cmidrule(r){4-6}
+ &  &  & All & 50\% & 10\% &  \\
+\midrule
+DNS & 7532 & 2398 & 16.53 & 33.07 & 128.54 & ``ANY'' on ``.sl'' \\
+DNS_{auth} & 926 & 926 & 11.84 & 18.40 & 25.96 & Max. ``ANY'' on own domains \\
+NTP & 25962 & 25129 / 632  & 2.84 & 4.69 & 19.13 & Max. of the private queries\\
+Memcached & 13 & 0 & 0 & 0 & 0 & ``Get'' request \\
+\bottomrule
+\end{tabular}
+\label{tab:hosts_baf}
+\end{table*}
+
+
+\end{document}

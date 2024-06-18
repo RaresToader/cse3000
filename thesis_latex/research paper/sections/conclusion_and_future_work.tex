@@ -1,0 +1,28 @@
+\section{Conclusion}
+
+\captionsetup{font=normalsize}
+\begin{table}[t]
+    \centering
+    \caption{Theoretical amplification traffic when the attacker has an uplink of 100 Mbps.}
+    \normalsize
+    \begin{tabular}{cccc}
+    \toprule
+    \# of top hosts & Cumulative BAF & Victim (bits/s) \\
+    \midrule
+    100 & 13,073.35 & 1.307 T \\
+    250 & 32,087.23 & 3.208 T \\
+    500 & 38,964.94 & 3.8964 T \\
+    \bottomrule
+    \end{tabular}
+\label{tab:data}
+\end{table}
+
+\looseness=-1 \textbf{Summary}. We have analysed the amplification potential of three protocols from hosts located in Greece. We have shown that DNS remains a very effective amplification vector; the cumulative BAF provided by the worst $250$ DNS amplifiers was $\approx 32,000$. We have determined that ``ANY'' queries and a large EDNS0 buffer size lead to high DNS amplification. Moreover, two popular DNS implementations (Raiden DNSD and MikroTik) set a default value of 4,096 for the buffer size. In contrast, we have not found significant amplification potential in NTP and Memcached hosts (located in Greece). Lastly, we discovered that looping attacks are also possible among the hosts considered. We found some vulnerable same protocol server pairs, leading to $7$ potential loops. 
+
+
+\looseness=-1 \textbf{Future Work}: We would like to raise awareness of the dangers of DRDoS attacks and the need for further research. While our measurement study focused on three protocols, numerous other protocols (e.g. CharGen, SNMP) could be exploited. Future research should expand to include these and potentially other protocols to provide a more comprehensive understanding of amplification threats. This should be done in the context of an extensive and diverse dataset with better geographic coverage to ensure that the findings are globally representative and account for regional differences in network configurations and security practices. Since our results are a lower bound of what attackers can accomplish in practice, we believe studying amplifiers and real DRDoS attacks could give invaluable insights into how protocols are exploited (i.e. how an attacker optimises to reach the highest BAF). Last but not least, our analysis was limited to the IPv4 range. Further research should focus on identifying and analysing IPv6 hosts running protocols that can lead to amplification to understand this risk in the IPv6 space. This is crucial as the adoption of IPv6 continues to grow.
+
+\clearpage
+
+
+

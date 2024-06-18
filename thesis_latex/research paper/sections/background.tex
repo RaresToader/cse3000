@@ -1,0 +1,42 @@
+\section{Background}
+
+\looseness=-1 This section provides details and definitions of relevant concepts in this thesis. We also give definitions and ways the considered protocols were used in amplification attacks in the past. 
+
+\looseness=-1 An \textit{amplifier} is a public server running a UDP-based protocol. With this consideration, the server can receive spoofed requests and reflect the response to the victim. This paper considers servers running one of the following three services: the Domain Name System (DNS), the Network Time Protocol (NTP) and Memcached. The motivation behind restricting the research to these three services is that they have been notorious in the context of DRDoS, being potent amplification vectors~\cite{cloud_dns_ampl},~\cite{cloudflare_ntp_ampl},~\cite{cloud_memcached_ampl}. Nonetheless, for further work, other protocols are worth exploring, as shown in~\cite{amplification_hell}, such as the Simple Network Management Protocol (SNMP)~\cite{imperva_snmp}. 
+
+\looseness=-1 To measure how powerful an amplifier is, we use the \textit{bandwidth amplification factor} (BAF) as this has been previously defined in the literature in the context of amplification attacks~\cite{amplification_hell}. BAF is defined as the quotient between the size of the UDP payload of the amplifier answer and the size of the UDP payload of the spoofed request, see Equation~\eqref{eq:baf}. 
+
+\looseness=-1 For gathering information about hosts, such as IP addresses and services running on that server, we have used \textit{Censys}~\cite{censys15}. It is a search engine that enables security researchers to find and analyse devices and networks on the Internet quickly, without a heavy computational effort (via an academic license that we also received). Censys gathers data on hosts through periodic Internet scans, the scanning method relying on a variant of ZMap. This is a revolutionary scanner that can scan the entire IPv4 address range in around 45 minutes with enough bandwidth resources~\cite{zmap}. Censys scans and stores the ports of servers that are publicly accessible. The platform allows queries such as retrieving all hosts in Greece or hosts with a service running on a specific port. Queries used for this thesis along with some extra information are shown in Appendix~\ref{appendix:censys_queries}.
+
+\looseness=-1 \textbf{Protocol Overview}. The \textit{Domain Name System} (DNS) is often described as the ``phonebook'' of the Internet~\cite{cloud_dns}. DNS forms the critical infrastructure that helps the browser find the assigned IP address of the server where the website is hosted, given the domain. DNS enables users to use simple, human-readable domain names that can be easily remembered and translated into IP addresses. This translation process is the so-called \textit{address resolution}. DNS usually runs on port 53 and can handle many other types of requests, responding with corresponding resource records (RRs). If someone sends an ``ANY'' request, the DNS server answers with all the resource records related to the domain queried.  For this reason, DNS represents an attractive amplification vector for malicious adversaries. It does not surprise that according to Cloudflare, in 2021, 44\% of organisations mentioned that attacks based on DNS were one of their most challenging security problems~\cite{cloud_dns_threat_landscape}.
+
+
+\begin{figure}[t]
+  % \vspace*{-\dimexpr\topskip+\ht\strutbox\relax} 
+    \small
+    \begin{equation}
+    BAF = \frac{len(UDP\ payload)\ amplifier\ to\ victim}{len(UDP\ payload)\ attacker\ to\ amplifier}
+    \label{eq:baf}
+    \end{equation}
+\end{figure}
+
+\vspace{-0.68pt}
+% NTP
+\looseness=-1 The \textit{Network Time Protocol} (NTP) is a protocol used to synchronise the clocks between computers over a network~\cite{wiki_ntp}. Essentially, it ensures that all the computers connected to a network agree on the time, up to an accuracy of milliseconds. This is crucial for tasks that require precise timing, such as logging events or scheduling tasks. Implementations of this protocol commonly use the port number 123 and exchange timestamps over UDP~\cite{wiki_ntp}. NTP has been weaponised previously via the ``monlist'' command, which returns a list of up to 600 hosts that most recently communicated with an NTP server~\cite{cloudflare_ntp_ampl}.  This is prone to creating significant responses compared to a small query, leading to an enormous amplification factor. Mitigations have been proposed; K{\"u}hrer et al. explored this vulnerability and managed to carry out a campaign that, in the end, reduced the susceptible NTP servers by a staggering 92\%~\cite{exit_hell}. We aim to investigate whether the NTP ``monlist`` command is still a threat to the Greek network infrastructure.
+
+% Memcached
+
+\looseness=-1 \textit{Memcached} is a distributed memory caching system primarily used to increase the performance of dynamic web applications by removing some load from the database~\cite{memcached_github}. It works by storing data from the result of database calls, API calls, or page rendering in memory (essentially being cached). The data is stored in the random-access memory (RAM) of the servers running the Memcached daemon and is structured as a sizeable hash table distributed across machines~\cite{wiki_memcached}. This means that when the same data is needed again, it can be retrieved faster from this memory cache rather than being recomputed or fetched from a slower disk-based database.  Memcached services often run on port 11211 and sometimes respond to UDP requests~\cite{wiki_memcached}. GitHub sustained a heavy DRDoS attack in 2018 based on the Memcached ``get'' query. This attack was described by Akamai in 2018, and it presented how such a query could lead to a potential amplification factor of $50,000$~\cite{akamai2018attackspotlight}. 
+
+% This request sends the value associated with a key (which can have an extreme size, up to 1 MB)~\cite{wiki_memcached}. After the GitHub attack, Memcached-based attacks have dropped in popularity due to vendors patching their software. We investigate if this devastating attack is still possible in the wild. 
+
+
+
+
+% \textbf{Tool Overview}. \textit{Scapy} is a versatile packet manipulation library~\cite{scapy} used in this thesis to construct, send and capture packets to measure the amplification factor. It can create and parse packets of numerous protocols, send them and receive and match response packets to requests. Scapy can parse the packets, providing details such as packet structures and payload sizes. It can be used in an interactive shell as a REPL or in Python as a library. For this thesis, we used the latter.
+
+
+% The \textit{Domain Information Groper} (dig) is a useful command-line tool that enables users to query DNS name servers in a simple manner. It fetches DNS information (DNS records) about domain names, mail exchanges, IP addresses and name servers. Being easy to use and flexible, it is the standard tool system administrators use to diagnose DNS problems and examine DNS configurations. We have used it in our research to find authoritative name servers for a set of domains easily and to map domain names to IP addresses. 
+ 
+% As data from Censys came in JSON format, we have used \textit{jq} to retrieve specific fields and records from the JSON file~\cite{jq}. It is a lightweight command-line tool that allows users to process JSON, extract and modify elements, and produce JSON or even CSV outputs, making it very useful for working with JSON-formatted data.
+

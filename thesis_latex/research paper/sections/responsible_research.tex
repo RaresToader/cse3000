@@ -1,0 +1,61 @@
+\section{Responsible Research}
+
+
+
+\captionsetup{font=scriptsize}
+\begin{table}[t]
+    \raggedright % Aligns the table to the left
+    \caption{BAF per protocol. ``All'' represents the mean BAF across all open amplifiers, 50\% and 10\% only consider the most vulnerable 50\% or 10\% of all open amplifiers. In the third column, in the NTP row, the first number shows the number of servers that responded to a Mode 3 request, and the second the hosts that responded to ``monlist''.}
+    \scriptsize % Reduce font size (tiny is even smaller) /scriptsize
+    \renewcommand{\arraystretch}{0.8} % Adjust row height
+    \setlength{\tabcolsep}{1.3pt} % Adjust column spacing
+    \begin{tabular}{lcccccc}
+        \toprule
+        \multirow{2}{*}{Protocol} & \multirow{2}{*}{\# of hosts} & \multirow{2}{*}{\# of open hosts} & \multicolumn{3}{c}{BAF} & \multirow{2}{*}{Strategy} \\
+        \cmidrule(r){4-6}
+         &  &  & All & 50\% & 10\% &  \\
+        \midrule
+        DNS & 7532 & 2398 & 16.5 & 33.1 & 128.5 & ``ANY'' on ``.sl'' \\
+        DNS\(_{auth}\) & 926 & 926 & 11.8 & 18.4 & 26.0 & Max. ``ANY'' on own domains\\
+        NTP & 25962 & 25129 / 632 & 2.8 & 4.7 & 19.1 & Max. of private queries\\
+        Memcached & 13 & 0 & 0 & 0 & 0 & ``Get'' request \\
+        \bottomrule
+    \end{tabular}
+    \label{tab:hosts_baf}
+\end{table}
+
+\looseness=-1 This section will present the considerations we made when conducting our experiments to follow an ethical research approach. 
+
+\looseness=-1 \textbf{Ethical Considerations}. When gathering initial information about hosts, we employed passive scanning to be as non-intrusive as possible. In contrast, if done without proper authorisation, active scanning could have been seen as malicious by the other parties. Furthermore, in the filtering and measurement stage of our methodology, described in Section \RNum{5}, we send packets to a host once, and we set a cool-down period of 100 milliseconds between requests to prevent flooding the target with requests, as well as not exhausting the bandwidth of any network links, respectively. 
+
+\looseness=-1 We will also make sure not to publish the IP addresses of hosts that are amplifiers to avoid the possibility of an attacker using this information and launching a DDoS attack. We wish to refrain from facilitating anyone with the resources to carry out such an attack. 
+ 
+
+\looseness=-1 \textbf{Reproducibility}. Due to the dynamic character of the world's networks, it is impossible to guarantee the complete reproducibility of our experiments. For instance, due to IP address churn, the hosts we gathered might have different IPs if collected at different times in the future~\cite{griffioen_quantifying_2020}. Similarly, the vantage point from which the experiments are conducted might influence the results~\cite{wagner_united_2021}. Nonetheless, we have created a Dockerfile that specifies everything one needs to run our experiments in the same setting (i.e., the same dependencies and versions). The scripts are also open-source and hosted on the author's GitHub~\cite{rares_code}. 
+
+
+% \captionsetup{font=scriptsize}
+% \begin{table}[t]
+%     \raggedright % Aligns the table to the left
+%     \caption{BAF per protocol. ``All'' represents the mean BAF across all open amplifiers, 50\% and 10\% only consider the most vulnerable 50\% or 10\% of all open amplifiers. In the third column, in the NTP row, the first number shows the number of servers that responded to a Mode 3 request, and the second the hosts that responded to ``monlist''.}
+%     \scriptsize % Reduce font size (tiny is even smaller) /scriptsize
+%     \renewcommand{\arraystretch}{0.8} % Adjust row height
+%     \setlength{\tabcolsep}{1.3pt} % Adjust column spacing
+%     \begin{tabular}{lcccccc}
+%         \toprule
+%         \multirow{2}{*}{Protocol} & \multirow{2}{*}{\# of hosts} & \multirow{2}{*}{\# of open hosts} & \multicolumn{3}{c}{BAF} & \multirow{2}{*}{Strategy} \\
+%         \cmidrule(r){4-6}
+%          &  &  & All & 50\% & 10\% &  \\
+%         \midrule
+%         DNS & 7532 & 2398 & 16.5 & 33.1 & 128.5 & ``ANY'' on ``.sl'' \\
+%         DNS\(_{auth}\) & 926 & 926 & 11.8 & 18.4 & 26.0 & Max. ``ANY'' on own domains\\
+%         NTP & 25962 & 25129 / 632 & 2.8 & 4.7 & 19.1 & Max. of private queries\\
+%         Memcached & 13 & 0 & 0 & 0 & 0 & ``Get'' request \\
+%         \bottomrule
+%     \end{tabular}
+%     \label{tab:hosts_baf}
+% \end{table}
+
+
+% Reflect on the ethical aspects of your research and discuss the reproducibility of your methods.
+% Note that although in many published works there is no such a section (it may be part of some meta-information collected by the journal, or part of the discussion section), we require you to think (and report) about this as part of this course.

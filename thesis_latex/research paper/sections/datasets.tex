@@ -1,0 +1,48 @@
+\section{Datasets}
+\looseness=-1 This section presents the sources of the data used for our research. Four primary data sources were inspected. The first data source is Censys~\cite{censys15} with their Internet database, and the second is IANA~\cite{iana} to find all top-level domains. The third is NTP Pool~\cite{ntp_pool} and the fourth source is an archived list of the most popular domain names from the Technical University of Munich (TUM)~\cite{tum_domains}.
+
+\looseness=-1 \textbf{Host information}. Censys offers a large variety of publicly available information related to the public Internet. The platform allows for queries similar to those in a search engine. We used this functionality to query for hosts located in Greece (via passive scanning), which are running DNS, NTP, and Memcached on ports 53, 123 and 11211, respectively. The three queries (one per protocol) can be seen in Appendix~\ref{appendix:censys_queries}. The output from the queries came as raw JSON files containing a list of IP addresses alongside relevant metadata such as location or AS. After processing the data, we were left with 7,532 (DNS), 25,962 (NTP) and 13 (Memcached) servers. 
+
+\looseness=-1 The data was collected on May 10, 2024. Still, since we employed passive scanning (we just queried whatever data was stored; we did not actively probe servers at this stage), we are unaware of the actual date of origin when Censys collected the data. 
+
+\looseness=-1 \textbf{Top-level domains}. The \textit{Internet Assigned Numbers Authority} (\textit{IANA}) is an organisation that is responsible for allocating IP addresses, AS numbers and other tasks~\cite{iana}. We used it to gather a list of all available top-level domains (TLDs). This data was collected on May 2, 2024. 
+
+\looseness=-1 The list of all TLDs is later ranked based on which domain is associated with the largest response size. That domain is later used in DNS ``ANY'' queries. The rationale behind this decision is that ranking all possible domains requires much more computational effort and is outside the scope of this work. However, this is an interesting topic, which has been researched by Van der Toorn et al.~\cite{van_der_toorn_anyway_2021}. In this work, they rank hundreds of millions of domain names based on the amplification factor they can achieve. Another insightful finding they discovered is that the domains used in DNS-based DDoS attacks are among the largest ones that could be used. Furthermore, even larger domains that had yet to be exploited were found.
+
+\looseness=-1 \textbf{NTP Pool servers}. The NTP Pool project represents a sizeable virtual cluster of NTP servers distributed worldwide~\cite{ntp_pool}. This pool is critical in synchronising clocks for millions of machines worldwide. We found 12 NTP servers located in Greece that were part of this group as of May 3, 2024. We considered that they were worth testing for amplification since many clients use the pool. Although all 12 NTP servers were open, none of them were found to be vulnerable to amplification.
+
+\looseness=-1 \textbf{Most popular domain names}. From the archive by TUM, we obtained the top 10 million domain names according to Open PageRank as of April 16, 2023~\cite{tum_domains}. This dataset was used to find popular Greek domain names. We kept the most popular 1,023 Greek domains. Consequently, these helped us find authoritative nameservers located in Greece.
+    
+\looseness=-1 Using the first three datasets, we were able to make precise measurements of the amplification potential of DNS, NTP, and Memcached hosts located in Greece. The last dataset enabled us to see whether authoritative nameservers can serve as better amplifiers than non-authoritative ones in the context of DNS-based amplification attacks.
+
+
+% openpagerank-top-10m-2023-04-16_0900_UTC.csv
+% Min 300 words
+
+% Censys => host IP addresses corresponding to servers running NTP, DNS and Memcached
+
+
+
+
+% \section{Your contribution (replace this section title by something more informative)}
+% In computer science typically the third section contains an exposition of the main ideas, for example the development of a theory, the analysis of the problem (some proofs), a new algorithm, and potentially some theoretical analysis of the properties of the algorithm.
+
+% Do not forget to give this section another name, for example after the method or idea you are presenting.
+
+% Some more detailed suggestions for typical types of contributions in computer science are described in the following subsections.
+
+
+% \subsection*{Experimental work}
+% In this case, this section will mostly contain a description of the methods/algorithms you will be comparing. Although not all methods need to be described in detail (providing appropriate references are available), make sure that you reveal sufficient details to a reader not familiar with these methods to: a) obtain a high-level understanding of the method and differences between them, and b) understand your explanation of the results/conclusions.
+
+% \subsection*{Improvement of an idea}
+% In this case, you would need to explain in detail how the improvement works. If it is based on some observation that can be proven, this is a good place to provide that proof (e.g., of the correctness of your approach). 
+
+% \subsection*{Literature survey}
+% If your contribution is a literature survey, then the organization of these ``middle'' sections very much depends on the way you want to present/organize the literature you are discussing.
+% First try to cluster papers that are similar in some aspect. Then think of how these clusters are related, from that you can think of a good order to discuss these clusters; this is sometimes called a bottom-up approach to writing a paper.
+
+% In addition, you may try to think about the organization of the literature from a top-down perspective: try to ``take a step back'' and think about the field and what important questions/variants are and build a hierarchical categorization of the field.
+
+% Make clear what your contribution is here: a new organization of the literature, identification of open problems/challenges, new parallels/generalizations, a table with pros/cons of different methods, etc.\ 
+

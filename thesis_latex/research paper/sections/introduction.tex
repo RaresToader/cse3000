@@ -1,0 +1,62 @@
+\section{Introduction}
+
+
+% Malicious actors typically launch denial-of-service attacks to reduce the availability of Internet servers. 
+\looseness=-1 A \textit{denial-of-service attack} (DoS) is a collection of cyber attacks that aim to disrupt the availability of a system~\cite{cloud_dos}. This attack and its variants have been widely researched~\cite{ddos_taxonomy} in the literature and have historically been one of the most popular strategies used by adversaries~\cite{crowdstrike_popular_attacks}. 
+
+\looseness=-1 A \textit{distributed denial-of-service} (DDoS) attack has the same goal as a normal DoS attack~\cite{cloud_ddos}. However, it achieves this by having multiple adversarial entities exhausting the target's resources instead of a single attacking entity. DDoS is a more powerful attack than the normal DoS~\cite{cloud_ddos}. The attacking entities in a DDoS context could be compromised computers or infected IoT devices, which could be part of a larger, malicious entity called a \textit{botnet}~\cite{crowdstrike_botnet}. The target can be a web server or another network service. The flood of incoming packets or connection requests to the victim's system forces it to become slower, become unresponsive or even crash, denying regular service to legitimate users, thus violating the ``A'' (availability) from the CIA (Confidentiality, Integrity and Availability) triad~\cite{cia-triad}.
+
+\looseness=-1 In a \textit{distributed reflection} DoS attack (DRDoS), a malicious actor uses public services to reflect traffic to a victim~\cite{amplification_hell}. The attacker sends requests on behalf of the victim, and in turn, the victim gets flooded with responses from the public services. Consequently, if enough requests are made and the size of the responses is large, the target's bandwidth is depleted. An amplification attack is essentially a DRDoS attack, where the attacker focuses on sending requesting packets to the public hosts, whose size would be smaller than the responding packets sent to the victim. In this sense, the response packets amplify the requesting packets, hence the attack's name. 
+
+% IP Spoofing in UDP-based protocols makes it possible for an attacker to send packets on the victim's behalf. NEW
+
+% The adversary must send packets on the victim's behalf to launch such an attack. This is possible due to IP spoofing in UDP-based protocols. OLD
+
+\looseness=-1 Several reasons make amplification attacks possible. IP spoofing in UDP-based protocols makes it possible for an attacker to send packets on the victim's behalf. \textit{IP spoofing} means the attacker sets the source address in the IP header as the victim's IP address when sending a packet to a public server. Consequently, the victim receives the response packets from the servers. This happens because UDP-based protocols respond to queries without being required to establish a connection (which is the case for TCP-based protocols) and thus do not validate the IP address of the entity sending the request. IP spoofing is considered a bad practice, and measures for it have been described 24 years ago in an RFC (Request for Comments)~\cite{ferguson-2000}. This introduces the idea of network ingress filtering (commonly referred to as BCP38)~\cite{ferguson-2000}, which would be a general measure against denial-of-service attacks that utilise IP source address spoofing.  
+However, empirical evidence shows that IP spoofing is an ongoing problem that has yet to be eliminated~\cite{spoofer_project}, remaining the most critical cause of amplification attacks~\cite{amplification_hell}.
+
+\looseness=-1 Another essential cause for amplification attacks is an asymmetry between the size of a request to a public server and the size of the response. This asymmetry enables amplification and is a desirable feature for an attacker, as they only have to send a small packet to reflect a larger amount to the victim. This security issue is present in many protocols because these protocols have not been implemented with this aspect in mind. For example, the ``monlist'' command~\cite{cloud_monlist} allows users to query an NTP server, retrieving up to 600 hosts with which the NTP server has most recently communicated. This feature was mainly meant as a debugging tool but has also been weaponised by adversaries in successful DRDoS attacks~\cite{amplification_hell}.
+
+\looseness=-1 The first DDoS attack happened in July 1999, more than 20 years ago~\cite{mit_first_ddos}. The biggest DDoS attack ever recorded took place in 2017~\cite{cloud_famoud_ddos}. It targeted Google services and peaked at 2.54 Tbps. DDoS attacks have kept getting more notoriety over the years, becoming well-established cyber attacks with a popularity that has kept rising. In a recent DDoS threat report for 2024 Q1, Cloudflare mentions that they have noticed a 50\% increase in DDoS attacks compared to the corresponding first quarter in 2023~\cite{cloud_q1report}. DDoS attacks are extremely popular in the cyber threat landscape for several reasons. Firstly, they are relatively easy to orchestrate, requiring little technical expertise, as they can even be bought online as a service, often under the umbrella name of ``stress-testing'', at a reasonable cost~\cite{buy_ddos}. Secondly, these attacks effectively overwhelm a victim's system, leading to downtime or service disruption. Moreover, the malicious actor can achieve this while also preserving their anonymity. 
+
+\looseness=-1 Seeing the impact and complexity of DRDoS attacks, we realised there is no auditing tool to find servers in an autonomous system (AS)~\cite{autsys} that could be weaponised and, consequently, unintentionally participate in amplification attacks. The literature lacks a comprehensive list that enumerates all the negative aspects of all existing protocols or the configuration of a specific server that could contribute to launching an amplification attack.
+
+\looseness=-1 As an extension, we also analyse looping attacks, a novel DoS attack at the application-layer level~\cite{cispa-loopy}. This particular attack leads to infinite amplification, as two vulnerable servers would send messages to each other indefinitely. This happens, for instance, when a host responds to a malformed request with an error message, and this response prompts another server to send the packet needed for the initial server to send the same error message. Thus, a traffic loop is formed between the two servers. This type of attack can be hazardous, as it could also be used to target network links. We follow the methodology in~\cite{cispa-loopy} to discover which servers are vulnerable and how many vulnerable host pairs could be formed. Note that our study focused on Greece, as this was the country assigned to us for our project. With this thesis, we make the following contributions:
+
+\begin{itemize}[left=0pt, itemsep=0pt]
+    \item We investigate which DNS, NTP, and Memcached servers located in Greece can be utilised in amplification attacks. 
+
+    \item  We explore what amplification factor can typically be achieved with the Greek infrastructure explored and what conditions influence this factor. 
+
+    \item We measure the number of vulnerable pairs of DNS and NTP servers located in Greece that could be formed in the context of looping attacks.
+    
+\end{itemize}
+
+
+
+\looseness=-1 The thesis is structured as follows. In Section II, background information is given, such as definitions and important concepts. Section III mentions notable contributions related to our work. Section IV describes the data used in this work and how it was obtained. Section V presents the ways in which the experiments and measurements were performed. Section VI mentions the operational considerations enforced throughout this work in order to follow an ethical research procedure. Section VII highlights the results, and Section VIII showcases reflections on them. Lastly, Section VIII draws the conclusions. 
+
+
+
+
+
+
+
+% \begin{itemize}
+% \item Introduce the topic and explain why it is important (motivation!). %\emph{How should a scientific paper look like?}
+
+% \item Relate to the most relevant existing work from the literature (use BibTeX), explain their contributions, and (critically) indicate what is still unanswered. 
+% %\emph{The existing state of the art describes the setup of general scientific papers, e.g.\ see~\cite{hengl2002rules}, but this may be different for computer science papers.}
+
+% \item Explain what the research questions for this work are. 
+% This usually is a subset of the unanswered questions. %\emph{The aim of this work is therefore to provide a good template specifically for papers in the field of computer science.}
+
+% \item Summarize the main contributions/conclusions of this research.
+% NB: Make sure the title of the paper is a good match to the main research question / contribution / conclusion.
+
+% \item Briefly indicate how the rest of the paper fits together to answer the research question(s).
+% \end{itemize}
+
+% For a longer research paper, a section with a more elaborate discussion of the literature may follow, but for short (conference) submissions, this is often included in the introduction.
+
+% Make sure the introduction and conclusion are easily understandable by everyone with a computer science bachelor (e.g.\ your examiner may have a completely different expertise).

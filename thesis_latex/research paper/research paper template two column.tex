@@ -1,0 +1,107 @@
+\documentclass{IEEEtran}
+\pdfpagewidth=8.5in
+\pdfpageheight=11in
+\usepackage{ijcai20}
+
+% Use the postscript times font!
+\usepackage{times}
+\renewcommand*\ttdefault{txtt}
+\usepackage{soul}
+
+% \usepackage{url}
+% \usepackage[hidelinks]{hyperref}
+\usepackage[utf8]{inputenc}
+% \usepackage[small]{caption}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{enumerate}
+\usepackage{titlesec}
+% \usepackage{appendix} % For appendix formatting
+
+% \usepackage{float} % Added to enforce placement
+
+\usepackage[font=small,skip=0pt]{caption} 
+
+\usepackage[hyphens]{url}
+% \usepackage{breakurl}
+\usepackage{hyperref}
+
+\usepackage{enumitem}
+\usepackage{booktabs}  
+\usepackage{multirow}  % For multirow cells
+
+\usepackage{tabularx}
+
+\usepackage{geometry}
+\geometry{top=0.75in, bottom=0.8in, left=0.6in, right=0.6in}
+
+\usepackage{listings}
+\usepackage{xcolor} % For color definitions
+
+\usepackage{subcaption}
+% \usepackage{cite}
+
+
+% Adjusting spacing parameters for sections and subsections
+\titlespacing*{\section}{0pt}{*0}{0pt}
+\titlespacing*{\subsection}{0pt}{*0}{0pt}
+
+% Adjusting spacing parameters for tables
+\setlength{\abovecaptionskip}{1pt} % Space above caption
+\setlength{\belowcaptionskip}{0pt} % Space below caption
+\setlength{\textfloatsep}{2pt plus 1.0pt minus 2.0pt} % Space between table and text
+
+\setlength{\abovedisplayskip}{0pt} 
+\setlength{\belowdisplayskip}{0pt}
+
+\newcommand{\RNum}[1]{\uppercase\expandafter{\romannumeral #1\relax}}
+
+
+% Redefine section numbering to use Roman numerals
+\renewcommand{\thesection}{\Roman{section}}
+
+\urlstyle{same}
+
+
+\begin{document}
+
+\input{title_page}
+
+\pagestyle{plain} 
+\setcounter{page}{1} 
+
+\input{sections/abstract}
+
+\input{sections/introduction}
+
+\input{research paper/sections/background}
+
+\input{research paper/sections/related_work}
+
+
+\input{research paper/sections/datasets}
+
+\input{research paper/sections/methodology}
+
+\input{sections/responsible_research}
+
+\input{research paper/sections/results}
+
+\input{sections/discussion}
+
+\input{sections/conclusion_and_future_work}
+
+\bibliographystyle{IEEEtran}
+% \begin{sloppypar}
+\bibliography{references}
+% \end{sloppypar}
+
+\input{sections/appendix}
+
+
+% A rule of thumb for dealing with the literature is the following: scan about 10--20 contributions: read title, abstract, part of introduction and conclusions; categorize contribution; some of these are studied in more depth: completely read about 5 conference papers or equivalent (summarize contribution in own words); of which studied in-depth about 2 conference papers (the student is able to explain in detail and criticize contributions). This may result in 5--20 references, possibly even more if the project is a literature study.
+
+
+\end{document}
+

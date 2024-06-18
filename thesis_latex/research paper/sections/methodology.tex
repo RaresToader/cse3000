@@ -1,0 +1,123 @@
+\section{Methodology}
+
+\looseness=-1 In this section, we present the methodology for measuring the amplification potential of servers located in Greece, alongside a brief description of how we counted the number of server pairs vulnerable to looping attacks. An overview of our methodology can be seen in Fig.~\ref{fig:diagram}.
+
+\captionsetup{font=small}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.4838\textwidth]{research paper/plots/diagram_trim.png}
+  \caption{Methodology diagram. The top left side corresponds to collecting authoritative nameservers. The top right part shows how to find the server pairs vulnerable to looping attacks using the methodology from the correspondent paper.}
+  \label{fig:diagram}
+\end{figure}
+
+
+\looseness=-1 \textbf{Measuring the amplification potential}. To accurately measure the BAF of hosts located in Greece running DNS, NTP or Memcached, we have followed a similar methodology to the one presented by Griffioen et al.~\cite{griffioen_scan_2021}. We mimicked an adversary's workflow without actually launching a DDoS attack.
+
+
+\looseness=-1 \textbf{Filtering closed hosts}. Firstly, we have gathered and processed host information (the so-called ``Reconnaissance'' phase). An attacker would first be interested in seeing whether these servers are ``online'', i.e. accepting and responding to requests, as this is the prime precondition to be weaponised. This step allowed us to avoid doing unnecessary work on offline hosts. This step reduces the computational load on our machine and any strain we might put on the network. Thus, a filtering step would be essential if such a measurement study was conducted worldwide. More details for each filtering packet presented below can be seen in Appendix~\ref{appendix:filter_queries}.
+
+\looseness=-1 We hand-crafted packets for each protocol, which we then sent to hosts, and filtered out servers that did not respond with a packet we expected, for instance, returning an ICMP error packet or hosts that did not respond within a timeout period we set. The packets we crafted were aimed to be basic, common packets that an open server would be expected to answer without any issue. This measure is by no means foolproof and could be improved by sending more than one probe per protocol.
+    
+\looseness=-1 \textbf{DNS}. We send a simple request (query type = ``A'') to resolve the IP address of ``google.com'', with the rationale that this domain is widespread and almost any open recursive DNS resolver would be able to answer it (by retrieving the appropriate record from the corresponding authoritative nameserver). Recursive resolvers, as opposed to authoritative nameservers, do not hold the answer RRs, but they make the necessary requests on behalf of the client (if the result was not cached). In this part, we were aware that we might be biased towards filtering out authoritative NSs since they are less likely to hold the ``A'' RR requested (a limited number of servers have this record). They might still retrieve them if they forward the request to another resolver in case of an error. However, this is unexpected behaviour and a bad practice~\cite{auth_no_rec}; even an RFC from 2008 mentions that, in general, authoritative NSs should not provide recursion~\cite{rfc-5358}. 
+
+\looseness=-1 The bias to discard authoritative NSs is hard to measure since DNS servers do not respond, admitting they are authoritative. To mitigate this, we performed a procedure to complement our DNS host set, which will be explained later, by collecting authoritative NSs. We reject responses with ``rcode'' set to 2 or 5, which stands for server failure and refused, respectively. We also set a timeout of 400 milliseconds. The filtering step left us with 2,397 servers.
+        
+\looseness=-1 \textbf{NTP}. We create a simple Mode 3 packet, i.e. a ``client mode'' packet. This is one of the several operational modes of NTP, and it allows a ``client'' to query a server for the current time. In a sense, it represents the core functionality of NTP. To validate this approach, we looked at how the ``sntp'' command-line utility tool~\cite{sntp_overview} crafts packets (by capturing the packets sent and inspecting them via Wireshark~\cite{wireshark}), and we noticed they send the exact packet we crafted with Scapy, a robust packet manipulation tool with Python support~\cite{scapy}. We rejected any non-NTP response and set a timeout period of 200 milliseconds. This step left us with 25,130 servers. We then proceeded with another filtering stage, as we are only interested in Mode 7 queries (they lead to the highest amplification); we also sent the notorious ``monlist'' command by setting the request code to $42$~\cite{cloud_monlist}. A timeout period of 1 second was set, and any non-NTP response packets were not considered. The dataset was further reduced to 633 servers. 
+
+\looseness=-1 \textbf{Memcached}. A ``stats slabs'' packet is created to query the Memcached server for detailed statistics about the memory allocation. Memcached uses a slab allocation technique to manage memory efficiently for storing items of various sizes~\cite{slab_allocation}. Slabs are essentially blocks of memory divided into chunks. Each chunk can hold a cached item. When this packet is sent, Memcached is supposed to answer with information about each slab class, including the number of chunks allocated or used. After this was carried out, 0 out of 13 were left standing. This shows that none of the Memcached servers located in Greece responded to UDP. Turning off the UDP port for Memcached had been a widely deployed security measure following a sequence of devastating attacks exploiting this protocol~\cite{amplification_hell}.
+    
+
+\looseness=-1 \textbf{Augumenting DNS dataset}. To ensure our DNS dataset also has a representative sample of authoritative servers, we decided to retrieve top Greek domains from the list provided by TUM (see Section \RNum{4}). We parsed enough of the list to obtain a good amount of domains. We obtained 1,023 Greek domains. We queried our local resolver for ``NS'' records on the Greek domains to find authoritative nameservers. We then performed a DNS query for the nameserver domains to resolve their IP addresses. As a final check, we made sure that the IPs were in Greece's IP range by using ipinfo~\cite{ipinfo}, an insightful geolocation tool for IPs. Thus, we collected 926 authoritative nameservers and the domains each one was authoritative for.  
+
+\looseness=-1 \textbf{Collect amplification factors}. Secondly, we wish to rank the filtered hosts based on the BAF (see Equation~\eqref{eq:baf}). For this purpose, we again hand-crafted special packets for each protocol. Having the attacker's reasoning in mind, we wanted to create the packets that would lead to the highest amplification factor. Appendix~\ref{appendix:measurement_queries} shows other details (e.g. code) related to these packets.
+
+\looseness=-1 \textbf{DNS}. An adversary aims to make the query size smaller, i.e. query a smaller domain, while getting substantial responses. This could happen if the attacker creates a short domain with a large ``TXT'' record, for instance. However, we assumed that an attacker would like to leave as few traces as possible and use existing domains. Since there are millions of domains, we restricted ourselves to rank only the top-level domains (the list retrieved from IANA mentioned in Section \RNum{4}) according to their BAF. We used the well-established ``ANY'' query for the following measurements, as attackers typically used it in DNS-based amplification attacks too~\cite{van_der_toorn_anyway_2021} since nameservers (if they support this query type) are expected to return all RRs of the domain in the query. 
+    
+\looseness=-1 The TLDs are among the shortest domains one could use in a query. Surprisingly, ``.sl'' (the country-code top-level domain for Sierra Leone) returned the highest BAF of 177.83. This was an extreme value and is also a theoretical one as the response size had 5,513 bytes (larger than the maximum UDP size of 4,096) and was sent over TCP. This motivated us enough that the domain contained many records and was a worthy candidate for the query. Note that this measurement was done on all TLDs using the Google Public DNS recursive resolver (8.8.8.8) to ensure reproducibility~\cite{google_dns}. We then proceeded to query the DNS hosts with the ``ANY'' query on the ``.sl'' domain, with an EDNS0 record setting the buffer size to 4,096 and the ``DO'' bit set to 1 (to request a DNSKEY signed answer), following the methodology of~\cite{van_der_toorn_anyway_2021}, as we were interested in getting the maximum response. We got a BAF as high as 132.19, which is still very attractive for an attacker. This query was expected to yield small amplification factors for the authoritative nameservers, so we performed the same query on a different domain instead. We made one request per domain for which the nameservers were authoritative and kept the maximum BAF attained.
+    
+\looseness=-1 \textbf{NTP}. Alongside the notorious ``monlist'' (mon\_getlist\_1), we also sent three other Mode 7 (private) packets, namely peer\_list, peer\_list\_sum and get\_restricted, as they were also known to lead to good amplification factors~\cite{rapid7_private}. The ``peer\_list'' request will return all hosts with whom a server is peering, ``peer\_list\_sum'' returns the same information as the previous request but also includes some metadata about the peers. Lastly, a ``get\_restrict'' response will contain hosts to whom firewall rules are applied (e.g., allowlisted IPs or blocklisted). If a server responds to the last query, this also leads to an information disclosure vulnerability attack. 
+    
+\looseness=-1 \textbf{Memcached}. Following the 1.3Tbps DDoS Attack on GitHub~\cite{wired_ddos}, Akamai disclosed the type of queries attackers sent to public Memcached servers~\cite{akamai2018attackspotlight}. Even though none of our servers responded to UDP requests, we decided to still work on the methodology to send a packet that is expected to get a significant response from Memcached servers. We also validated the methods on an open Memcached server from one of our peers from France. It is important to note that Memcached operates in its essence in a very similar fashion to a key-value store. Users can query using a ``get $<$key$>$'' command to retrieve the value assigned to the key. Typically, the maximum size of a value is 1 megabyte (MB). An attacker can use this command on an existing key (that is short) associated with a considerable value. However, maximum effectiveness is achieved when the attacker sets the smallest key possible (with the size of 1 character) to the largest value possible (1 MB of data). After this, the ``get'' command can be sent alongside the key inserted previously. An attacker can even chain the keys, sending ``get $<key>$ $<key>...$'', which would lead to a tremendous response. This type of packet was observed in~\cite{akamai2018attackspotlight}. The strategy will lead to an amplification factor in tens of thousands, which is unprecedented compared to the other protocols studied. We decided to work with whatever was stored on the server and compute the BAF for a ``get'' request with a single key, namely the one with the largest associated value (so without implanting a key and value pair). More details and our implementation of this approach are presented in Appendix~\ref{appendix:measurement_queries}.
+
+
+\looseness=-1 \textbf{Gather factors}. To investigate which servers achieve a large or small BAF adjacent to our measurements, we also collect metadata that will later be analysed in conjunction with the amplification factor. This has been done to paint a better picture of what leads to a higher amplification factor. The code that supports the collection of factors can be seen in Appendix~\ref{appendix:collect_metadata}.
+
+\looseness=-1 For DNS, we collected the software run by hosts by fingerprinting using ``fpdns''~\cite{fpdns_kirei}. From the initial Censys data, we collected various information about the AS, such as the AS description and the AS number, as well as the vendor (i.e. Microsoft) and the product (operating system, i.e. Linux). By using the ``dig'' command~\cite{dig}, a flexible DNS lookup utility tool, we also retrieved what EDNS0 buffer size a DNS server was advertising (if any). For NTP, we fetched the system variable (i.e. operating system) of each host by using the ``ntpq'' utility tool~\cite{ntpq}.
+    
+\looseness=-1 \textbf{Vulnerability to looping attacks}. Besides the BAF measurement, we analyse the same protocol pairs for DNS and NTP, which are vulnerable to looping pairs. To do this, we followed the methodology and ran the same experiments as Pan et al.~\cite{cispa-loopy}. We forked the repository in order to run the code (after making some small changes for the scale of our experiment) on our datasets~\cite{loopy_code}. The procedure they set up is composed of 5 steps, which are detailed in Appendix~\ref{appendix:loopy_attacks}. Due to the difference in size of the datasets (we had around 100 times fewer hosts), we had to adapt the code and change some of the authors' decisions. After the second step, they find 90 clusters with at least $10,000$ responses, and they only sample packets from these clusters in step 3. In our experiment, we considered all the clusters with at least $1$ response. Furthermore, in step 4, the authors only consider edges with at least $100$ participants, whereas we kept all edges with at least $2$ participants (not $1$, to avoid self-loops). We have also skipped running the last stage, which would have involved setting up a proxy. If this had been done incorrectly, we would have risked starting an actual loop between two servers.
+
+% \begin{enumerate}[itemsep=0pt]
+% \looseness=-1 \textbf{Step 1.} In the first stage discovery packets are sent to all the servers go gather a complete set of responses. These could serve as the entry point to a traffic loop.  
+
+% \looseness=-1 \textbf{Step 2.} Since there could be many distinct responses (depending on the number of hosts), the second stage clusters the responses based on their semantics. Insignificant syntactic differences, such as the transaction ID (TXID), are ignored since they cannot influence a DNS response. In the end, several clusters will hold semantically equivalent responses. 
+
+% \looseness=-1 \textbf{Step 3.} With a similar reasoning as the second stage, in the third stage, random responses are sampled from each of the clusters. These will be the set of probes that will be sent again to each server. Sending all the initial responses to all the servers would have been both infeasible, due to the large number of initial responses, but also ineffective, since several packets from the same cluster are expected to have the same behaviour, and in turn, should themselves lead to the same response. The responses after this third stage also end up being clustered in the same way as the second stage.  
+
+% \looseness=-1 \textbf{Step 4.} With the information gathered in the third step, a loop graph can be formed. In this graph edges represent servers that reply to an input from one cluster with a response from the same or another cluster. Following this, a DFS is ran to find cycles with a length of at most 4.
+
+% \looseness=-1 \looseness=-1 \textbf{Step 5.} In the last stage, the loops that were identified previously are formally verified with a proxy. The proxy sits in between the two servers that are being tested and it forwards messages between the two. Once the proxy has forwarded enough messages, the two servers are validated as a loop pair. As this step required setting up a proxy, we have skipped it.
+% \end{enumerate}
+
+% \captionsetup{font=scriptsize}
+% \begin{table}[t]
+%     \raggedright % Aligns the table to the left
+%     \caption{BAF per protocol. ``All'' represents the mean BAF across all open amplifiers, 50\% and 10\% only consider the most vulnerable 50\% or 10\% of all open amplifiers. In the third column, in the NTP row, the first number shows the number of servers that responded to a Mode 3 request, and the second the hosts that responded to ``monlist''.}
+%     \scriptsize % Reduce font size (tiny is even smaller) /scriptsize
+%     \renewcommand{\arraystretch}{0.8} % Adjust row height
+%     \setlength{\tabcolsep}{1.3pt} % Adjust column spacing
+%     \begin{tabular}{lcccccc}
+%         \toprule
+%         \multirow{2}{*}{Protocol} & \multirow{2}{*}{\# of hosts} & \multirow{2}{*}{\# of open hosts} & \multicolumn{3}{c}{BAF} & \multirow{2}{*}{Strategy} \\
+%         \cmidrule(r){4-6}
+%          &  &  & All & 50\% & 10\% &  \\
+%         \midrule
+%         DNS & 7532 & 2398 & 16.5 & 33.1 & 128.5 & ``ANY'' on ``.sl'' \\
+%         DNS\(_{auth}\) & 926 & 926 & 11.8 & 18.4 & 26.0 & Max. ``ANY'' on own domains\\
+%         NTP & 25962 & 25129 / 632 & 2.8 & 4.7 & 19.1 & Max. of private queries\\
+%         Memcached & 13 & 0 & 0 & 0 & 0 & ``Get'' request \\
+%         \bottomrule
+%     \end{tabular}
+%     \label{tab:hosts_baf}
+% \end{table}
+
+% \looseness=-1 Due to the difference in size of the datasets (we had around 100 times fewer hosts), we had to adapt the code and change some of the authors' decisions. After the second step, they find 90 clusters with at least $10,000$ responses, and they only sample packets from these clusters in step 3. In our experiment, we considered all the clusters with at least $1$ response. Furthermore, in step 4, the authors only consider edges with at least $100$ participants, whereas we kept all edges with at least $2$ participants (not $1$, to avoid self-loops). We have also skipped running the last stage, which would have involved setting up a proxy. If this had been done incorrectly, we would have risked starting an actual loop between two servers.
+
+% As we want to promote open research, the code for the experiments and the datasets, including results, will be publicly available on the author's GitHub account.
+
+
+
+% !! overview with results table!!  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+% \section{Experimental Setup and Results}
+% As discussed earlier, in many sciences the methodology is explained in section 2 and this section only discusses the results. 
+% However, in computer science, most often the details of the evaluation setup are described here first (simulation environment, etc.).
+% Very important is that any skilled reader would be able to reproduce this setup and then obtain the same results.
+
+% Then, results are reported in an accessible manner through figures (preferably with captions that allow them to be understood without going through the whole text), observations are made that clearly follow from the presented results.
+% Conclusions are drawn that follow logically from the previous material.
+% Sometimes the conclusions are in fact hypotheses, which in turn may give rise to new experiments to be validated.
+
+% You may want to give this section another name.
