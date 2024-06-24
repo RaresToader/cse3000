@@ -1,8 +1,9 @@
 # Estimating the Amplification Factor of Three Common Protocols in DRDoS
 ## A Quantitative Analysis on the Weaponisation of Hosts Located in Greece
 
-### CSE3000 / Research Project @ TU Delft
-This repository hosts the code that was written to run the experiments for my Research Project (CSE3000 / Q4-2024) thesis
+### [CSE3000 - Research Project](https://github.com/TU-Delft-CSE/Research-Project) @ [TUDelft](https://github.com/TU-Delft-CSE).
+
+This repository hosts the code that was written to run the experiments for my Research Project ([CSE3000, ed.2024/Q4](https://cse3000-research-project.github.io/2024/Q4)) thesis
  along with some results of what BAFs were achieved.
 
 ### Aknowledgements
